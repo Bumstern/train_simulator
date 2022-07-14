@@ -1,0 +1,81 @@
+[
+  {
+    "name": "Малый 1",
+    "load_station_name": "Радужный",
+    "unload_station_name": "Полярный",
+    "velocity": 40,
+    "storage_volume": 4000,
+    "coord": 1250,
+    "state": 3,
+    "direction": 2,
+    "oil_volume": 4000
+  },
+  {
+    "name": "Малый 2",
+    "load_station_name": "Радужный",
+    "unload_station_name": "Полярный",
+    "velocity": 40,
+    "storage_volume": 4000,
+    "coord": 0,
+    "state": 2,
+    "direction": 2,
+    "oil_volume": 0
+  },
+  {
+    "name": "Малый 3",
+    "load_station_name": "Радужный",
+    "unload_station_name": "Полярный",
+    "velocity": 40,
+    "storage_volume": 4000,
+    "coord": 0,
+    "state": 4,
+    "direction": 2,
+    "oil_volume": 4000
+  },
+  {
+    "name": "Большой 1",
+    "load_station_name": "Радужный",
+    "unload_station_name": "Полярный",
+    "velocity": 35,
+    "storage_volume": 6000,
+    "coord": 0,
+    "state": 4,
+    "direction": 1,
+    "oil_volume": 0
+  },
+  {
+    "name": "Большой 2",
+    "load_station_name": "Радужный",
+    "unload_station_name": "Полярный",
+    "velocity": 35,
+    "storage_volume": 6000,
+    "coord": 0,
+    "state": 4,
+    "direction": 1,
+    "oil_volume": 0
+  },
+
+
+  {
+    "name": "Средний 1",
+    "load_station_name": "Звезда",
+    "unload_station_name": "Полярный",
+    "velocity": 45,
+    "storage_volume": 5000,
+    "coord": 0,
+    "state": 4,
+    "direction": 1,
+    "oil_volume": 0
+  },
+  {
+    "name": "Средний 2",
+    "load_station_name": "Звезда",
+    "unload_station_name": "Полярный",
+    "velocity": 45,
+    "storage_volume": 5000,
+    "coord": 0,
+    "state": 4,
+    "direction": 1,
+    "oil_volume": 0
+  }
+]

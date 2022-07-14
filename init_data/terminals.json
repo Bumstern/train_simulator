@@ -1,0 +1,18 @@
+[
+  {
+    "station_name": "Радужный",
+    "oil_volume": 6000,
+    "tracks_num": 1,
+    "emptying_speed": 200,
+    "mean_prod_speed": 150,
+    "std_prod_speed": 10
+  },
+  {
+    "station_name": "Звезда",
+    "oil_volume": 5000,
+    "tracks_num": 1,
+    "emptying_speed": 250,
+    "mean_prod_speed": 50,
+    "std_prod_speed": 2
+  }
+]

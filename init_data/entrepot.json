@@ -1,0 +1,11 @@
+[
+  {
+    "station_name": "Полярный",
+    "oil_volume": 0,
+    "tracks_num": 3,
+    "emptying_speed": 300,
+    "filling_speed": 200,
+    "storage_volume": 15000,
+    "unload_limit": 10000
+  }
+]

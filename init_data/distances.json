@@ -1,0 +1,12 @@
+[
+  {
+    "point_a_name": "Радужный",
+    "point_b_name": "Полярный",
+    "distance": 2500
+  },
+  {
+    "point_a_name": "Звезда",
+    "point_b_name": "Полярный",
+    "distance": 4000
+  }
+]
