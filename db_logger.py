@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import psycopg2
 
 
+# TODO: should be properly implemented
 class Logger:
     def __init__(self):
         self._conn = psycopg2.connect("dbname=simulator user=postgres password=root host=localhost")

@@ -5,7 +5,21 @@ from manager.station_manager import StationManager
 
 
 class TrainManager:
+    """ Manages trains logic """
+
     def __init__(self, trains: list[Train], station_manager: StationManager, distances: list[list]):
+        """
+        Parameters
+        ----------
+        trains
+            List of trains. Train names must be unique
+        station_manager
+            Station manager object
+        distances
+            List of distances between stations.
+            List consists of [station name A, station name B, distance]
+        """
+
         train_names = set()
         for train in trains:
             if train.name in train_names:
@@ -28,9 +42,19 @@ class TrainManager:
             self._trains_cargo_time[train.name] = -1
 
     def get_trains_info(self) -> list[dict]:
+        """ Get trains logging info
+
+        Returns
+        -------
+        list[dict]
+            <train_name> str: name of the train
+            <station_name> str: name of station where train is in cargo process
+            <cargo_time> int: amount of steps for how long train is in cargo process
+        """
+
         info = []
         for train in self._trains:
-            # Проверяем, что поезд только что уехал
+            # Checking if the train has just left
             if train.state == TrainState.Transit and self._trains_cargo_time[train.name] > -1:
                 train_info = {'train_name': train.name,
                               'station_name': None,
@@ -46,6 +70,14 @@ class TrainManager:
         return info
 
     def __set_train_preconditions(self, train: Train):
+        """ Updates trains state that are not in buffer
+
+        Parameters
+        ----------
+        train
+            Train to add
+        """
+
         if train.state == TrainState.Ready:
             train.change_direction()
             train.state = TrainState.Transit
@@ -53,7 +85,7 @@ class TrainManager:
             # for logging purposes
             self._trains_cargo_time[train.name] += 1
         elif train.state == TrainState.Arrived:
-            # Выясняем на какую станцию прибыл поезд
+            # Finding out which station the train arrived at
             arrived_station_name = ''
             if train.direction == TrainDirection.To_load_station:
                 arrived_station_name = train.load_station_name
@@ -62,20 +94,20 @@ class TrainManager:
             else:
                 raise NotImplementedError('No such direction')
 
-            # Проверяем наличие очереди на погрузку
+            # Checking if there is a queue for loading process
             if len(self._buffers[arrived_station_name]) > 0:
-                # Обновляем состояния на "В ожидании"
+                # Update status to "Wait"
                 train.state = TrainState.Wait
-                # Ставим поезд в очередь
+                # Putting the train in the queue
                 self._buffers[arrived_station_name].append(train)
             else:
-                # Пытаемся поставить поезд на погрузку
+                # Trying to set train to the station
                 is_added = self._station_manager.add_train_to_station(train, arrived_station_name)
-                # Проверяем, что поезд был добавлен на погрузку
+                # Checking that the train has been added to the station
                 if not is_added:
-                    # Обновляем состояния на "В ожидании"
+                    # Update status to "Wait"
                     train.state = TrainState.Wait
-                    # Cтавим поезд в очередь
+                    # Putting the train in the queue
                     self._buffers[arrived_station_name].append(train)
                 else: # for logging purposes
                     self._trains_cargo_time[train.name] = 1
@@ -87,21 +119,23 @@ class TrainManager:
             raise NotImplementedError('No such state')
 
     def update(self):
-        # Обновляем состояния поездов, не находящихся в очередях
+        """ Updates trains state """
+
+        # Updates the states of trains that are NOT in queues
         for train in self._trains:
-            # Обрабатываем предусловия логики поезда
+            # Handling train logic preconditions
             self.__set_train_preconditions(train)
-            # Обрабатываем логику поезда
+            # Handling train logic
             train.update()
 
-        # Обрабатываем поезда в очередях
+        # Updates the states of trains that are in queues
         for name in self._station_manager.get_station_names():
             buffer = self._buffers[name]
             is_added = True
-            # Добавляем столько поездов из очереди, сколько сможем
+            # Adding as many trains from the queue as we can
             while is_added:
                 if len(buffer) > 0:
-                    # Пытаемся добавить поезд
+                    # Trying to set train to the station
                     is_added = self._station_manager.add_train_to_station(buffer[0], name)
                     if is_added:
                         # for logging purposes
