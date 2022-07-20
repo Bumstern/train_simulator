@@ -6,6 +6,8 @@ from train_logic.train_state import TrainState
 
 
 class Entrepot(TrainStation):
+    """ Entrepot station where oil is unloaded """
+
     def __init__(self,
                  station_name: str,
                  oil_volume: int,
@@ -14,6 +16,25 @@ class Entrepot(TrainStation):
                  filling_speed: int,
                  storage_volume: int,
                  unload_limit: int):
+        """
+        Parameters
+        ----------
+        station_name
+            A name of the station. Must be unique
+        oil_volume
+            Initial oil amount in storage
+        tracks_num
+            Number of railway tracks
+        emptying_speed
+            Speed of station storage emptying
+        filling_speed
+            Speed of station storage filling
+        storage_volume
+            Maximum oil amount that station can store
+        unload_limit
+            Unloader train storage size
+        """
+
         super().__init__(station_name, oil_volume, tracks_num)
         self._emptying_speed = emptying_speed
         self._filling_speed = filling_speed
@@ -23,6 +44,18 @@ class Entrepot(TrainStation):
         self._last_collected_oil_per_track = [None] * tracks_num
 
     def get_info(self) -> dict:
+        """ Get entrepot condition info
+
+        Returns
+        -------
+        dict
+            <oil_amt> int: amount of oil in station storage
+            <tracks> list: list of tracks where elements consist of -
+                    <train_name> str: name of train on the track. None if track is free
+                    <oil_collected> int: amount of train's collected oil during the last step
+                    <storage> int: amount of oil in train storage
+        """
+
         tracks_info = []
         for i, track in enumerate(self._tracks):
             elem = {'train_name': None, 'oil_collected': self._last_collected_oil_per_track[i], 'storage': None}
@@ -35,8 +68,21 @@ class Entrepot(TrainStation):
         return info
 
     def __pre_simulate(self, train: Train) -> bool:
-        # Вычисляем суммарный объем топлива (объем топлива в поездах + хранилище + пришедшем поезде),
-        # а также кол-во свободных жд путей
+        """  Preliminary simulation of train adding process to the track
+
+        Parameters
+        ----------
+        train
+            Train for add simulation process
+
+        Returns
+        -------
+        bool
+            True if train can be added successfully, False otherwise
+        """
+
+        # Calculating the total amount of oil (the amount of oil in trains + storage + arriving train)
+        # and the number of free railway tracks
         sum_oil_volume = self._oil_volume + train.oil_volume
         free_tracks_num = 0
         for train in self._tracks:
@@ -46,37 +92,52 @@ class Entrepot(TrainStation):
                 free_tracks_num += 1
 
         can_add = True
-        # Проверяем, что есть свободный жд путь
+        # Check if there is a free track on the station
         if free_tracks_num == 0:
             can_add = False
-        # Проверяем, что суммарный объем топлива не превышает вместимости хранилища
+        # Checking that the total volume of oil does not exceed the storage capacity
         elif sum_oil_volume <= self._storage_volume:
-            # Проверяем, что пришедший поезд сможет разгружаться, не мешая разгр. поезду
+            # We check that the incoming train will be able to unload without interfering with the unloading train
             if sum_oil_volume >= self._unload_limit:
                 if self._unloader_train is None:
                     if free_tracks_num < 2:
                         can_add = False
-        else:  # превышает вместимость хранилища
+        else:  # otherwise exceeds storage capacity
             can_add = False
         return can_add
 
     def add_train_to_track(self, train: Train) -> bool:
+        """ Add a train to the track
+
+        Parameters
+        ----------
+        train
+            Train to add
+
+        Returns
+        -------
+        bool
+            True if train was added successfully, False otherwise
+        """
+
         is_added = False
-        # Пытаемся добавить поезд на путь, проводя предсимуляцию
+        # Trying to add a train to the track by doing a presimulation
         if self.__pre_simulate(train):
             is_added = True
             for i, track in enumerate(self._tracks):
-                # Ищем первый свободный жд путь
+                # Looking for the first free track
                 if track is None:
-                    # Ставим на него поезд
+                    # Put a train to this track
                     train.state = TrainState.In_cargo_process
                     self._tracks[i] = train
                     break
         return is_added
 
     def __unloader_train_adding_logic(self):
-        # Вычисляем суммарный объем топлива (объем топлива в поездах + хранилище),
-        # а также кол-во свободных жд путей
+        """ Logic of adding an unloader train to the station """
+
+        # Calculating the total amount of oil (the volume of oil in trains + storage)
+        # and the number of free railway tracks
         sum_oil_volume = self._oil_volume
         free_tracks_num = 0
         for train in self._tracks:
@@ -85,86 +146,105 @@ class Entrepot(TrainStation):
             else:
                 free_tracks_num += 1
 
-        # Проверяем, что разгр. нет и есть свободное место под него
+        # Checks that there is no unloader train and there is free space for it
         if self._unloader_train is None and free_tracks_num > 0:
             is_added = False
-            # Проверить, что кол-во нефти в поездах и в хранилище >= объема хранилища разгр.
+            # Checks that the amount of oil in trains and station storages >=
+            # the volume of the storage of the unloader train
             if sum_oil_volume >= self._unload_limit:
-                # Вычисляем минимальную скорость пополнения
+                # Calculating the minimum storage filling speed
                 sum_speed = self._filling_speed - self._emptying_speed
                 if sum_speed < 0:
                     has_steps = self._oil_volume // abs(sum_speed)
                     need_steps = math.ceil(self._unload_limit / self._emptying_speed)
-                    # Проверяем, что хватает шагов для наполнения хранилища на необходимое кол-во
+                    # Checks that there are enough steps to fill the storage for the required number
                     if has_steps >= need_steps:
                         is_added = True
                 else:
                     is_added = True
 
             if is_added:
-                # Создаем поезд-разгрузчик
+                # Create an unloader train
                 unloader_train = create_unload_train(self._station_name, self._unload_limit)
 
                 for i, track in enumerate(self._tracks):
-                    # Ищем первый свободный жд путь
+                    # Looking for the first free track
                     if track is None:
-                        # Добавляем поезд-разгрузчик
+                        # Adding an unloader train
                         self._unloader_train = unloader_train
-                        # Ставим на пути
+                        # Put unloader train to the track
                         self._tracks[i] = unloader_train
                         break
 
     def __fill_storage(self):
-        # Собираем топливо
+        """ Fill the station storage """
+
+        # Collecting the oil
         collected_oil = 0
         self._last_collected_oil_per_track = [None] * len(self._tracks)
         for i, train in enumerate(self._tracks):
             if train is not None:
-                # Проверяем является ли состав поездом-разгрузки
+                # Checking if the train is an unloader train
                 if train == self._unloader_train:
-                    # Погружаем топливо в поезд-разгрузки
+                    # Loading oil into the unloader train
                     oil_amt = self._emptying_speed - train.fill_storage(self._emptying_speed)
                     collected_oil -= oil_amt
-                    # Логгирование
+                    # Logging logic
                     self._last_collected_oil_per_track[i] = oil_amt
                 else:
-                    # Разгружаем топливо из обычных поездов
+                    # Unloading oil from train
                     oil_amt = train.empty_storage(self._filling_speed)
                     collected_oil += oil_amt
-                    # Логгирование
+                    # Logging logic
                     self._last_collected_oil_per_track[i] = oil_amt
-        # Пополняем хранилище на собранное значение
+        # Filling the storage with the collected value
         self._oil_volume += collected_oil
 
     def __send_trains(self):
+        """ Departure trains from the tracks """
+
         for i, train in enumerate(self._tracks):
             if train is not None:
-                # Проверяем является ли состав поездом-разгрузки
+                # Checking if the train is an unloader train
                 if train == self._unloader_train:
-                    # Полон ли поезд
+                    # Is the train storage full
                     if train.is_full():
-                        # Убираем с путей
+                        # Removing the train from the track
                         self._tracks[i] = None
-                        # Убираем поезд-разгрузчик
+                        # Removing the unloader train
                         self._unloader_train = None
                 else:
-                    # Пустой ли поезд
+                    # Is the train storage empty
                     if train.is_empty():
-                        # Обновляем его состояние на оконченное
+                        # Update train state to "Ready"
                         train.state = TrainState.Ready
-                        # Убираем с путей
+                        # Removing the train from the track
                         self._tracks[i] = None
 
     def update(self):
-        # Добавляем поезд-разгрузчик
+        # Add unloader train
         self.__unloader_train_adding_logic()
-        # Разгружаем/погружаем поезда и пополняем хранилище
+        # Loading/unloading trains and fill the station storage
         self.__fill_storage()
-        # Отправляем поезда
+        # Trains departing
         self.__send_trains()
 
 
 def create_unload_train(station_name: str, storage_volume: int):
+    """ Creates an unloader train
+
+    Parameters
+    ----------
+    station_name
+        Name of entrepot station
+    storage_volume
+
+    Returns
+    -------
+    Train
+        New unloader train with 0 oil volume
+    """
+
     train = Train(name='Разгрузочный',
                   load_station_name=station_name,
                   unload_station_name='',

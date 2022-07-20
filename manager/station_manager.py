@@ -59,18 +59,19 @@ class StationManager:
         -------
         list[dict]
             Terminal:
-                <oil_amt> int: amount of oil in storage
-                <oil_mined> int: amount of mined oil during last step
+                <oil_amt> int: amount of oil in station storage
+                <oil_mined> int: amount of mined oil during the last step
                 <train_name> str: name of train on the track. None if track is free
-                <oil_collected> int: amount of train's collected oil during last step
-                <train_storage> int: amount of oil in train's storage
+                <oil_collected> int: amount of train's collected oil during the last step
+                <train_storage> int: amount of oil in train storage
             Entrepot:
-                <oil_amt> int: amount of oil in storage
-                <tracks> list: list of tracks where elements consist of
+                <oil_amt> int: amount of oil in station storage
+                <tracks> list: list of tracks where elements consist of -
                     <train_name> str: name of train on the track. None if track is free
-                    <oil_collected> int: amount of train's collected oil during last step
-                    <storage> int: amount of oil in train's storage
+                    <oil_collected> int: amount of train's collected oil during the last step
+                    <storage> int: amount of oil in train storage
         """
+
         info = []
         for station in self._stations.values():
             elem = {station.station_name: station.get_info()}

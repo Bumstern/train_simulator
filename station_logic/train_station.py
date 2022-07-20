@@ -4,21 +4,13 @@ from train_logic.train_state import TrainState
 
 
 class TrainStation(ABC):
-    """ Base class of train station
-
-    Attributes
-    ----------
-    station_name
-        A name of the station. Must be unique. Read only
-
-    """
+    """ Base class of train station """
 
     def __init__(self,
                  station_name: str,
                  oil_volume: int,
                  tracks_num: int):
         """
-
         Parameters
         ----------
         station_name
@@ -28,6 +20,7 @@ class TrainStation(ABC):
         tracks_num
             Number of railway tracks
         """
+
         self._station_name = station_name
         self._oil_volume = oil_volume
         self._tracks = [None] * tracks_num
@@ -64,6 +57,7 @@ class TrainStation(ABC):
         bool
             True if train has successfully added, False otherwise
         """
+
         is_added = False
         for i, track in enumerate(self._tracks):
             if track is None:
@@ -79,6 +73,7 @@ class TrainStation(ABC):
 
         Need to implement
         """
+
         pass
 
     @abstractmethod
@@ -87,4 +82,5 @@ class TrainStation(ABC):
 
         Need to implement
         """
+
         pass

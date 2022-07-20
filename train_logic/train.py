@@ -13,6 +13,29 @@ class Train:
                  state: TrainState = TrainState.Wait,
                  direction: TrainDirection = TrainDirection.To_load_station,
                  oil_volume: int = 0):
+        """
+        Parameters
+        ----------
+        name
+            Name of train
+        load_station_name
+            Name of terminal station
+        unload_station_name
+            Name of entrepot station
+        velocity
+            Velocity of the train
+        storage_volume
+            Maximum oil amount that train can store
+        coord
+            Train coordinate on the railroad
+        state
+            Train state
+        direction
+            Direction of train moving
+        oil_volume
+            Initial oil amount in storage
+        """
+
         self._name = name
         self._load_station_name = load_station_name
         self._unload_station_name = unload_station_name
@@ -118,6 +141,7 @@ class Train:
 
     def change_direction(self):
         """ Changes direction of train to the opposite """
+
         if self._direction == TrainDirection.To_load_station:
             self._direction = TrainDirection.To_unload_station
         elif self._direction == TrainDirection.To_unload_station:
@@ -133,6 +157,7 @@ class Train:
 
     def update(self):
         """ Updates train condition due to its state """
+
         if self._state == TrainState.Transit:
             self.__drive_step()
             if self._coord == 0:
@@ -143,19 +168,19 @@ class Train:
         else:
             raise NotImplementedError('No such state')
 
-    # TODO: Имя, какая станция и дата прибытия/отправления
     def get_info(self) -> dict:
         """ Get train condition info
 
         Returns
         -------
         dict
-            <name> str: train name
+            <name> str: train name. Must be unique
             <state> TrainState: train state
             <direction> TrainDirection: train direction
-            <oil> int: oil amount in storage
+            <oil> int: amount of oil in train storage
             <coord> int: coordinate of the train
         """
+
         info = {'name': self._name,
                 'state': self._state,
                 'direction': self._direction,
